@@ -2,7 +2,8 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- تنظیمات ویوپورت برای جلوگیری از زوم و تغییر سایز -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>بازرگانی درویشی</title>
     
     <!-- PWA Meta Tags -->
@@ -11,17 +12,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="درویشی">
     
-    <!-- Manifest Link -->
     <link rel="manifest" href="manifest.json">
-    
-    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="icon.svg">
     <link rel="apple-touch-icon" href="icon.svg">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@200;400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        /* همان استایل‌های قبلی بدون تغییر */
         :root {
             --bg-primary: #0a0f1a;
             --bg-secondary: #111827;
@@ -33,53 +30,275 @@
             --border: #2a3548;
             --danger: #ff6b6b;
         }
-        * { box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; }
-        body { background: var(--bg-primary); min-height: 100vh; margin: 0; overflow-x: hidden; }
-        .bg-pattern { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
-        .bg-pattern::before { content: ''; position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); top: -200px; right: -200px; animation: float 20s ease-in-out infinite; }
-        .bg-pattern::after { content: ''; position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%); bottom: -100px; left: -100px; animation: float 15s ease-in-out infinite reverse; }
-        @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(50px, 30px) scale(1.1); } }
-        .grid-pattern { position: fixed; inset: 0; background-image: linear-gradient(rgba(42, 53, 72, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(42, 53, 72, 0.3) 1px, transparent 1px); background-size: 50px 50px; z-index: 0; }
-        .calculator-container { position: relative; z-index: 10; max-width: 420px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
-        .header { text-align: center; margin-bottom: 24px; }
-        .header h1 { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.5px; }
-        .card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(26, 35, 50, 0.8) 100%); border: 1px solid var(--border); border-radius: 20px; padding: 24px; backdrop-filter: blur(20px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
-        .input-group { margin-bottom: 16px; animation: slideIn 0.5s ease-out backwards; }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            /* جلوگیری از انتخاب متن و لرزش */
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* تنظیمات کلیدی برای ثابت ماندن صفحه */
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* جلوگیری از اسکرول بدنه اصلی */
+            position: fixed; /* ثابت کردن بدنه برای جلوگیری از جابجایی */
+            top: 0;
+            left: 0;
+            background: var(--bg-primary);
+        }
+
+        /* پس زمینه ها */
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+        .bg-pattern::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            bottom: -100px;
+            left: -100px;
+            animation: float 15s ease-in-out infinite reverse;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 30px) scale(1.1); }
+        }
+
+        .grid-pattern {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(42, 53, 72, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(42, 53, 72, 0.3) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* کانتینر اصلی */
+        .calculator-container {
+            position: relative;
+            z-index: 10;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100%; /* ارتفاع کامل */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto; /* اسکرول فقط در صورت نیاز داخلی */
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(26, 35, 50, 0.8) 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            flex-shrink: 0; /* جلوگیری از جمع شدن کارت */
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+            animation: slideIn 0.5s ease-out backwards;
+        }
         .input-group:nth-child(1) { animation-delay: 0.1s; }
         .input-group:nth-child(2) { animation-delay: 0.2s; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .input-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .input-label span { color: var(--text-muted); font-size: 0.875rem; font-weight: 600; }
-        .toggle-visibility { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s ease; display: flex; align-items: center; gap: 4px; font-size: 0.75rem; font-family: 'Vazirmatn', sans-serif; }
-        .toggle-visibility:hover { color: var(--accent); background: rgba(0, 212, 170, 0.1); }
-        .toggle-visibility:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .input-field { width: 100%; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text-primary); font-size: 1.25rem; font-weight: 600; text-align: left; direction: ltr; transition: all 0.3s ease; cursor: pointer; }
-        .input-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
-        .input-field.active { border-color: var(--accent); background: rgba(0, 212, 170, 0.05); }
-        .input-field.hidden-value { -webkit-text-security: disc; text-security: disc; }
-        .input-field::placeholder { color: var(--text-muted); opacity: 0.5; }
-        .result-card { background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 212, 170, 0.02) 100%); border: 2px solid rgba(0, 212, 170, 0.3); border-radius: 16px; padding: 20px; margin: 20px 0; text-align: center; animation: slideIn 0.5s ease-out 0.3s backwards; position: relative; overflow: hidden; }
-        .result-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .input-label span {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .toggle-visibility {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        .toggle-visibility:hover {
+            color: var(--accent);
+            background: rgba(0, 212, 170, 0.1);
+        }
+        .toggle-visibility:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .input-field {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            /* فونت ۱۶ پیکسل برای جلوگیری از زوم خودکار در iOS */
+            font-size: 16px; 
+            font-weight: 600;
+            text-align: left;
+            direction: ltr;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            /* غیرفعال کردن تغییرات ظاهری مرورگر روی اینپوت */
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+            /* حذف رفتارهای پیش‌فرض فوکوس */
+            outline: none;
+        }
+
+        .input-field.active {
+            border-color: var(--accent);
+            background: rgba(0, 212, 170, 0.05);
+        }
+        .input-field.hidden-value {
+            -webkit-text-security: disc;
+            text-security: disc;
+        }
+        .input-field::placeholder {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        /* باکس نتیجه */
+        .result-card {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 212, 170, 0.02) 100%);
+            border: 2px solid rgba(0, 212, 170, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            animation: slideIn 0.5s ease-out 0.3s backwards;
+            position: relative;
+            overflow: hidden;
+        }
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
         .result-label { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 8px; }
         .result-value { font-size: 2rem; font-weight: 900; color: var(--accent); line-height: 1.2; transition: all 0.3s ease; }
         .result-value.updating { transform: scale(1.05); }
         .result-currency { color: var(--text-muted); font-size: 1rem; margin-top: 4px; font-weight: 600; }
-        .keyboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; animation: slideIn 0.5s ease-out 0.4s backwards; }
-        .key { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 16px; color: var(--text-primary); font-size: 1.25rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .key:hover { background: rgba(42, 53, 72, 0.8); border-color: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-        .key:active { transform: translateY(0) scale(0.95); background: rgba(0, 212, 170, 0.2); }
+
+        /* کیبورد */
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            animation: slideIn 0.5s ease-out 0.4s backwards;
+        }
+        .key {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .key:active {
+            transform: scale(0.95);
+            background: rgba(0, 212, 170, 0.2);
+        }
         .key:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .key.action { background: rgba(0, 212, 170, 0.15); border-color: rgba(0, 212, 170, 0.3); color: var(--accent); }
-        .key.action:hover { background: rgba(0, 212, 170, 0.25); }
         .key.danger { background: rgba(255, 107, 107, 0.15); border-color: rgba(255, 107, 107, 0.3); color: var(--danger); }
-        .key.danger:hover { background: rgba(255, 107, 107, 0.25); }
         .key.clear { grid-column: span 2; }
-        .active-indicator { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; animation: slideIn 0.5s ease-out 0.35s backwards; }
-        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: all 0.3s ease; cursor: pointer; }
+
+        .active-indicator {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+            animation: slideIn 0.5s ease-out 0.35s backwards;
+        }
+        .indicator-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
         .indicator-dot.active { background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-        .indicator-dot:hover { transform: scale(1.2); }
-        @media (max-width: 480px) { .calculator-container { padding: 16px; } .card { padding: 20px; } .header h1 { font-size: 1.5rem; } .result-value { font-size: 1.75rem; } .key { padding: 14px; font-size: 1.125rem; } }
-        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+
+        @media (max-width: 380px) {
+            .card { padding: 16px; }
+            .key { padding: 12px; font-size: 1.1rem; }
+            .result-value { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -96,7 +315,7 @@
                 <div class="input-label">
                     <span>کد کالا</span>
                 </div>
-                <input type="text" id="codeInput" class="input-field" placeholder="کد کالا را وارد کنید" readonly aria-label="کد کالا">
+                <input type="text" id="codeInput" class="input-field" placeholder="کد کالا را وارد کنید" readonly aria-label="کد کالا" inputmode="numeric">
             </div>
 
             <div class="input-group">
@@ -110,7 +329,7 @@
                         <span id="toggleText">مخفی</span>
                     </button>
                 </div>
-                <input type="text" id="amountInput" class="input-field hidden-value" placeholder="مقدار کالا را وارد کنید" readonly aria-label="مقدار کالا">
+                <input type="text" id="amountInput" class="input-field hidden-value" placeholder="مقدار کالا را وارد کنید" readonly aria-label="مقدار کالا" inputmode="decimal">
             </div>
 
             <div class="result-card">
@@ -155,7 +374,6 @@
     </main>
 
     <script>
-        // Main Application Logic
         const codeInput = document.getElementById('codeInput');
         const amountInput = document.getElementById('amountInput');
         const resultValue = document.getElementById('resultValue');
@@ -173,6 +391,8 @@
             codeInput.classList.toggle('active', field === 'code');
             amountInput.classList.toggle('active', field === 'amount');
             indicatorDots.forEach(dot => dot.classList.toggle('active', dot.dataset.field === field));
+            // جلوگیری از فوکوس واقعی برای باز نشدن کیبورد سیستم
+            // البته چون readonly است کیبورد باز نمی‌شود، اما برای اطمینان بیشتر
         }
 
         codeInput.addEventListener('click', () => setActiveField('code'));
@@ -219,7 +439,10 @@
             setTimeout(() => resultValue.classList.remove('updating'), 150);
         }
 
+        // پشتیبانی از کیبورد فیزیکی (اختیاری)
         document.addEventListener('keydown', (e) => {
+            // اگر اینپوت فوکوس دارد (که اینجا readonly است) کاری نکن
+            // اما اگر فوکوس روی body است
             if (/^[0-9.]$/.test(e.key)) {
                 const currentInput = activeField === 'code' ? codeInput : amountInput;
                 if (e.key === '.' && currentInput.value.includes('.')) return;
@@ -237,12 +460,11 @@
 
         setActiveField('code');
 
-        // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker Registered', reg))
-                    .catch(err => console.log('Service Worker Registration Failed', err));
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Failed', err));
             });
         }
     </script>
