@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <!-- تنظیمات ویوپورت برای جلوگیری از زوم و تغییر سایز -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بازرگانی درویشی</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0a0f1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="درویشی">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@200;400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2332;
+            --accent: #00d4aa;
+            --accent-glow: rgba(0, 212, 170, 0.3);
+            --text-primary: #f0f4f8;
+            --text-muted: #6b7a90;
+            --border: #2a3548;
+            --danger: #ff6b6b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: var(--bg-primary);
+        }
+
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+        .bg-pattern::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            bottom: -100px;
+            left: -100px;
+            animation: float 15s ease-in-out infinite reverse;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 30px) scale(1.1); }
+        }
+
+        .grid-pattern {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(42, 53, 72, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(42, 53, 72, 0.3) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .calculator-container {
+            position: relative;
+            z-index: 10;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(26, 35, 50, 0.8) 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+            animation: slideIn 0.5s ease-out backwards;
+        }
+        .input-group:nth-child(1) { animation-delay: 0.1s; }
+        .input-group:nth-child(2) { animation-delay: 0.2s; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .input-label span {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .toggle-visibility {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        .toggle-visibility:hover { color: var(--accent); background: rgba(0, 212, 170, 0.1); }
+
+        .input-field {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            text-align: left;
+            direction: ltr;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+        .input-field.active {
+            border-color: var(--accent);
+            background: rgba(0, 212, 170, 0.05);
+        }
+        .input-field.hidden-value {
+            -webkit-text-security: disc;
+            text-security: disc;
+        }
+        .input-field::placeholder { color: var(--text-muted); opacity: 0.5; }
+
+        .result-card {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 212, 170, 0.02) 100%);
+            border: 2px solid rgba(0, 212, 170, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            animation: slideIn 0.5s ease-out 0.3s backwards;
+            position: relative;
+            overflow: hidden;
+        }
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        .result-label { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 8px; }
+        .result-value { font-size: 2rem; font-weight: 900; color: var(--accent); line-height: 1.2; transition: all 0.3s ease; }
+        .result-value.updating { transform: scale(1.05); }
+        .result-currency { color: var(--text-muted); font-size: 1rem; margin-top: 4px; font-weight: 600; }
+
+        /* کیبورد با چیدمان جدید */
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            animation: slideIn 0.5s ease-out 0.4s backwards;
+        }
+        .key {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .key:active { transform: scale(0.95); background: rgba(0, 212, 170, 0.2); }
+        .key.action { background: rgba(0, 212, 170, 0.15); border-color: rgba(0, 212, 170, 0.3); color: var(--accent); }
+        .key.danger { background: rgba(255, 107, 107, 0.15); border-color: rgba(255, 107, 107, 0.3); color: var(--danger); }
+        
+        /* کلاس برای دکمه‌های عریض در ردیف آخر */
+        .key.wide { grid-column: span 2; }
+
+        .active-indicator {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+            animation: slideIn 0.5s ease-out 0.35s backwards;
+        }
+        .indicator-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .indicator-dot.active { background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+
+        @media (max-width: 380px) {
+            .card { padding: 16px; }
+            .key { padding: 12px; font-size: 1.1rem; }
+            .result-value { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="grid-pattern"></div>
+
+    <main class="calculator-container">
+        <header class="header">
+            <h1>بازرگانی درویشی</h1>
+        </header>
+
+        <div class="card">
+            <div class="input-group">
+                <div class="input-label">
+                    <span>کد کالا</span>
+                </div>
+                <input type="text" id="codeInput" class="input-field" placeholder="کد کالا را وارد کنید" readonly aria-label="کد کالا" inputmode="numeric">
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">
+                    <span>مقدار کالا</span>
+                    <button class="toggle-visibility" id="toggleBtn" aria-label="تغییر حالت نمایش مقدار">
+                        <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                        <span id="toggleText">مخفی</span>
+                    </button>
+                </div>
+                <!-- مقدار پیش‌فرض 44000 تنظیم شد -->
+                <input type="text" id="amountInput" class="input-field hidden-value" placeholder="مقدار کالا را وارد کنید" value="44000" readonly aria-label="مقدار کالا" inputmode="decimal">
+            </div>
+
+            <div class="result-card">
+                <div class="result-label">مجموع محاسبه</div>
+                <div class="result-value" id="resultValue">0</div>
+                <div class="result-currency">تومان</div>
+            </div>
+
+            <div class="active-indicator">
+                <div class="indicator-dot active" data-field="code"></div>
+                <div class="indicator-dot" data-field="amount"></div>
+            </div>
+
+            <!-- کیبورد با چیدمان 123 -->
+            <div class="keyboard" role="group">
+                <!-- ردیف اول: 1 2 3 حذف -->
+                <button class="key" data-key="1">1</button>
+                <button class="key" data-key="2">2</button>
+                <button class="key" data-key="3">3</button>
+                <button class="key action" data-action="delete">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                        <line x1="18" y1="9" x2="12" y2="15"></line>
+                        <line x1="12" y1="9" x2="18" y2="15"></line>
+                    </svg>
+                </button>
+
+                <!-- ردیف دوم: 4 5 6 پاک کردن (C) -->
+                <button class="key" data-key="4">4</button>
+                <button class="key" data-key="5">5</button>
+                <button class="key" data-key="6">6</button>
+                <button class="key action" data-action="clear">C</button>
+
+                <!-- ردیف سوم: 7 8 9 ممیز -->
+                <button class="key" data-key="7">7</button>
+                <button class="key" data-key="8">8</button>
+                <button class="key" data-key="9">9</button>
+                <button class="key" data-key=".">.</button>
+
+                <!-- ردیف چهارم: صفر (عریض) و تایید (عریض) -->
+                <!-- دکمه پاک کردن همه حذف شد -->
+                <button class="key wide" data-key="0">0</button>
+                <button class="key action wide" data-action="calculate">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const codeInput = document.getElementById('codeInput');
+        const amountInput = document.getElementById('amountInput');
+        const resultValue = document.getElementById('resultValue');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const toggleText = document.getElementById('toggleText');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const indicatorDots = document.querySelectorAll('.indicator-dot');
+        const keys = document.querySelectorAll('.key');
+
+        let activeField = 'code';
+        let isAmountHidden = true;
+
+        function setActiveField(field) {
+            activeField = field;
+            codeInput.classList.toggle('active', field === 'code');
+            amountInput.classList.toggle('active', field === 'amount');
+            indicatorDots.forEach(dot => dot.classList.toggle('active', dot.dataset.field === field));
+        }
+
+        codeInput.addEventListener('click', () => setActiveField('code'));
+        amountInput.addEventListener('click', () => setActiveField('amount'));
+        indicatorDots.forEach(dot => dot.addEventListener('click', () => setActiveField(dot.dataset.field)));
+
+        toggleBtn.addEventListener('click', () => {
+            isAmountHidden = !isAmountHidden;
+            amountInput.classList.toggle('hidden-value', isAmountHidden);
+            toggleText.textContent = isAmountHidden ? 'مخفی' : 'نمایش';
+            eyeIcon.innerHTML = isAmountHidden 
+                ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`
+                : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+        });
+
+        keys.forEach(key => {
+            key.addEventListener('click', () => {
+                const keyValue = key.dataset.key;
+                const action = key.dataset.action;
+                const currentInput = activeField === 'code' ? codeInput : amountInput;
+                let value = currentInput.value;
+
+                if (keyValue) {
+                    if (keyValue === '.' && value.includes('.')) return;
+                    currentInput.value = value + keyValue;
+                    calculateResult();
+                } else if (action) {
+                    switch (action) {
+                        case 'delete': currentInput.value = value.slice(0, -1); calculateResult(); break;
+                        case 'clear': currentInput.value = ''; calculateResult(); break;
+                        // حذف دستور case 'clearAll'
+                        case 'calculate': calculateResult(); resultValue.classList.add('updating'); setTimeout(() => resultValue.classList.remove('updating'), 300); break;
+                    }
+                }
+            });
+        });
+
+        function calculateResult() {
+            const code = parseFloat(codeInput.value) || 0;
+            const amount = parseFloat(amountInput.value) || 0;
+            const result = code * amount;
+            resultValue.textContent = result.toLocaleString('fa-IR');
+            resultValue.classList.add('updating');
+            setTimeout(() => resultValue.classList.remove('updating'), 150);
+        }
+
+        // پشتیبانی از کیبورد فیزیکی
+        document.addEventListener('keydown', (e) => {
+            if (/^[0-9.]$/.test(e.key)) {
+                const currentInput = activeField === 'code' ? codeInput : amountInput;
+                if (e.key === '.' && currentInput.value.includes('.')) return;
+                currentInput.value += e.key;
+                calculateResult();
+            }
+            if (e.key === 'Backspace') {
+                const currentInput = activeField === 'code' ? codeInput : amountInput;
+                currentInput.value = currentInput.value.slice(0, -1);
+                calculateResult();
+            }
+            if (e.key === 'Tab') { e.preventDefault(); setActiveField(activeField === 'code' ? 'amount' : 'code'); }
+            if (e.key === 'Enter') { calculateResult(); }
+        });
+
+        setActiveField('code');
+        
+        // محاسبه اولیه با مقدار پیش‌فرض
+        calculateResult();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+    </script>
+</body>
+</html>
